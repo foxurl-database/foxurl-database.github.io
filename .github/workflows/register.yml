@@ -1,0 +1,49 @@
+name: FoxURL Registration
+
+on:
+  repository_dispatch:
+    types: [register_user]
+
+jobs:
+  add_user:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Read event payload
+        id: payload
+        run: |
+          echo "username=${{ github.event.client_payload.username }}" >> $GITHUB_OUTPUT
+          echo "contact_email=${{ github.event.client_payload.contact_email }}" >> $GITHUB_OUTPUT
+          echo "foxmail_email=${{ github.event.client_payload.foxmail_email }}" >> $GITHUB_OUTPUT
+          echo "password_hash=${{ github.event.client_payload.password_hash }}" >> $GITHUB_OUTPUT
+
+      - name: Generate safe random token
+        id: token
+        run: |
+          TOKEN=$(openssl rand -hex 32)
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Append new user to users.json
+        run: |
+          jq ". += [{
+            \"name\": \"${{ steps.payload.outputs.username }}\",
+            \"contact_email\": \"${{ steps.payload.outputs.contact_email }}\",
+            \"foxmail_email\": \"${{ steps.payload.outputs.foxmail_email }}\",
+            \"login_username\": \"${{ steps.payload.outputs.username }}\",
+            \"password_hash\": \"${{ steps.payload.outputs.password_hash }}\",
+            \"foxdrive_https\": \"https://foxdrive.example.com/${{ steps.payload.outputs.username }}\",
+            \"fox_token\": \"${{ steps.token.outputs.token }}\"
+          }]" foxurl/users.json > foxurl/users.tmp
+
+          mv foxurl/users.tmp foxurl/users.json
+
+      - name: Commit changes
+        run: |
+          git config user.name "FoxURL Bot"
+          git config user.email "bot@foxurl.com"
+          git add foxurl/users.json
+          git commit -m "Add new user ${{ steps.payload.outputs.username }}"
+          git push
