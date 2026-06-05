@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Patrick Dunn",
+    "contact_email": "patrickdunn032@gmail.com",
+    "foxmail_email": "pdunn@FoxURL-mail.github.io",
+    "login_username": "pdunn",
+    "password_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "foxdrive_https": "https://foxdrive.example.com/commute/pdunn/",
+    "fox_token": "Token"
+  },
+  {
+    "name": "Ian Dunn",
+    "contact_email": "idunn@bigpond.com",
+    "foxmail_email": "idunn@FoxURL-mail.github.io",
+    "login_username": "idunn",
+    "password_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "foxdrive_https": "https://foxdrive.example.com/alex",
+    "fox_token": "Token"
+  }
+]
