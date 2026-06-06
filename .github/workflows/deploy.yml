@@ -1,0 +1,28 @@
+name: Deploy FoxURL Site
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Inject PAT into register.js
+        run: |
+          sed -i "s|__PAT_REPLACED_AT_BUILD__|${{ secrets.FOXURL_PAT }}|g" foxurl/register.js
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
