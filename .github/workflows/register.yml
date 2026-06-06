@@ -1,8 +1,20 @@
 name: FoxURL Registration
 
 on:
-  repository_dispatch:
-    types: [register_user]
+  workflow_dispatch:
+    inputs:
+      username:
+        description: "Username"
+        required: true
+      contact_email:
+        description: "Contact Email"
+        required: true
+      foxmail_email:
+        description: "FoxMail Email"
+        required: true
+      password_hash:
+        description: "SHA-256 Password Hash"
+        required: true
 
 jobs:
   add_user:
@@ -11,14 +23,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Read registration payload
-        id: payload
-        run: |
-          echo "username=${{ github.event.client_payload.username }}" >> $GITHUB_OUTPUT
-          echo "contact_email=${{ github.event.client_payload.contact_email }}" >> $GITHUB_OUTPUT
-          echo "foxmail_email=${{ github.event.client_payload.foxmail_email }}" >> $GITHUB_OUTPUT
-          echo "password_hash=${{ github.event.client_payload.password_hash }}" >> $GITHUB_OUTPUT
 
       - name: Generate safe random token
         id: token
@@ -29,23 +33,23 @@ jobs:
       - name: Append new user to users.json
         run: |
           jq ". += [{
-            \"name\": \"${{ steps.payload.outputs.username }}\",
-            \"contact_email\": \"${{ steps.payload.outputs.contact_email }}\",
-            \"foxmail_email\": \"${{ steps.payload.outputs.foxmail_email }}\",
-            \"login_username\": \"${{ steps.payload.outputs.username }}\",
-            \"password_hash\": \"${{ steps.payload.outputs.password_hash }}\",
-            \"foxdrive_https\": \"https://foxdrive.example.com/${{ steps.payload.outputs.username }}/\",
+            \"name\": \"${{ github.event.inputs.username }}\",
+            \"contact_email\": \"${{ github.event.inputs.contact_email }}\",
+            \"foxmail_email\": \"${{ github.event.inputs.foxmail_email }}\",
+            \"login_username\": \"${{ github.event.inputs.username }}\",
+            \"password_hash\": \"${{ github.event.inputs.password_hash }}\",
+            \"foxdrive_https\": \"https://foxdrive.example.com/${{ github.event.inputs.username }}/\",
             \"fox_token\": \"${{ steps.token.outputs.token }}\"
-          }]" foxurl/users.json > foxurl/users.tmp
+          }]" users.json > users.tmp
 
-          mv foxurl/users.tmp foxurl/users.json
+          mv users.tmp users.json
 
       - name: Commit and push changes
         run: |
           git config user.name "FoxURL Bot"
           git config user.email "bot@foxurl.com"
-          git add foxurl/users.json
-          git commit -m "Add new user ${{ steps.payload.outputs.username }}"
+          git add users.json
+          git commit -m "Add new user ${{ github.event.inputs.username }}"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.FOXURL_PAT }}
