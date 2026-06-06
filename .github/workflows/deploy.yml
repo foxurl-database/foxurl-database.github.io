@@ -4,6 +4,11 @@ on:
   push:
     branches: ["main"]
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -15,7 +20,6 @@ jobs:
       - name: Inject PAT into register.js
         run: |
           sed -i "s|__PAT_REPLACED_AT_BUILD__|${{ secrets.FOXURL_PAT }}|g" foxurl/foxurl/register.js
-
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
