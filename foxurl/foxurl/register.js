@@ -53,3 +53,4 @@ async function register() {
     errorBox.textContent = "Error connecting to server.";
   }
 }
+ 
