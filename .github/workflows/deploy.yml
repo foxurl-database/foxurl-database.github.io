@@ -22,7 +22,8 @@ jobs:
 
       - name: Inject PAT into register.js
         run: |
-          sed -i "s|__PAT_REPLACED_AT_BUILD__|${{ secrets.FOXURL_PAT }}|g" foxurl/foxurl/register.js
+          sed -i "s|__PAT_REPLACED_AT_BUILD__|${{ secrets.FOXURL_PAT }}|g" foxurl/register.js
+
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
