@@ -1,0 +1,53 @@
+name: Auto Process Registrations
+
+on:
+  schedule:
+    - cron: "*/1 * * * *"   # every 1 minute
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Process pending registrations
+        run: |
+          mkdir -p foxurl/archive
+          for file in foxurl/pending/*.json; do
+            [ -e "$file" ] || continue
+
+            echo "Processing $file"
+
+            USERNAME=$(jq -r '.username' "$file")
+            CONTACT=$(jq -r '.contact_email' "$file")
+            FOXMAIL=$(jq -r '.foxmail_email' "$file")
+            HASH=$(jq -r '.password_hash' "$file")
+
+            TOKEN=$(openssl rand -hex 32)
+
+            jq ". += [{
+              \"name\": \"$USERNAME\",
+              \"contact_email\": \"$CONTACT\",
+              \"foxmail_email\": \"$FOXMAIL\",
+              \"login_username\": \"$USERNAME\",
+              \"password_hash\": \"$HASH\",
+              \"foxdrive_https\": \"https://foxdrive.example.com/$USERNAME/\",
+              \"fox_token\": \"$TOKEN\"
+            }]" foxurl/users.json > foxurl/users.tmp
+
+            mv foxurl/users.tmp foxurl/users.json
+
+            mv "$file" "foxurl/archive/$(basename "$file")"
+          done
+
+      - name: Commit changes
+        run: |
+          git config user.name "FoxURL Bot"
+          git config user.email "bot@foxurl.com"
+          git add foxurl/users.json foxurl/archive/
+          git commit -m "Processed pending registrations" || echo "No changes"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.FOXURL_PAT }}
